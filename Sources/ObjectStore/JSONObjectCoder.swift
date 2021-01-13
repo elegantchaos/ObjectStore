@@ -5,9 +5,12 @@
 
 import Foundation
 
-struct JSONObjectCoder: ObjectCoder {
+public struct JSONObjectCoder: ObjectCoder {
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
+    
+    public init() {
+    }
     
     public func decodeObject<T>(_ type: T.Type, from: Data) throws -> T where T : Decodable {
         try decoder.decode(type, from: from)

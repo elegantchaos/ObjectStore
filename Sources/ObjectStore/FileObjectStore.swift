@@ -10,7 +10,7 @@ public struct FileObjectStore<CoderType>: ObjectStore where CoderType: ObjectCod
     let root: Folder
     let coder: CoderType
 
-    init(root: Folder, coder: CoderType) {
+    public init(root: Folder, coder: CoderType) {
         self.root = root
         self.coder = coder
         
