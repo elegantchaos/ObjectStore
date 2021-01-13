@@ -9,11 +9,12 @@ import XCTestExtensions
 
 @testable import ObjectStore
 
-struct Test: Codable {
-    let name: String
-}
+final class ObjectStoreIdentifiableTests: XCTestCase {
+    struct Test: Codable, Identifiable {
+        let id: String
+        let name: String
+    }
 
-final class ObjectStoreTests: XCTestCase {
     typealias FileStore = FileObjectStore<JSONEncoder, JSONDecoder>
     
     var store: FileStore!
@@ -28,20 +29,22 @@ final class ObjectStoreTests: XCTestCase {
     }
 
     func testMultiple() {
-        store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"])
+        store.save([Test(id: "id1", name: "obj1"), Test(id: "id2", name: "obj2")])
         
         let decoded = store.load(Test.self, withIds: ["id1", "id2"])!
         XCTAssertEqual(decoded.count, 2)
+        XCTAssertEqual(decoded[0].id, "id1")
         XCTAssertEqual(decoded[0].name, "obj1")
+        XCTAssertEqual(decoded[1].id, "id2")
         XCTAssertEqual(decoded[1].name, "obj2")
     }
 
     func testSingle() {
-        store.save(Test(name: "obj1"), withId: "id1")
+        store.save(Test(id: "id1", name: "obj1"))
         
         let decoded = store.load(Test.self, withId: "id1")!
+        XCTAssertEqual(decoded.id, "id1")
         XCTAssertEqual(decoded.name, "obj1")
     }
 
 }
-
