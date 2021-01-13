@@ -43,5 +43,34 @@ final class ObjectStoreTests: XCTestCase {
         XCTAssertEqual(decoded.name, "obj1")
     }
 
+    func testMissingMultiple() {
+        let decoded = store.load(Test.self, withIds: ["missing"])
+        XCTAssertEqual(decoded?.count, 0)
+    }
+
+    func testMissingPartial() {
+        let decoded = store.load(Test.self, withIds: ["missing"])
+        XCTAssertEqual(decoded?.count, 0)
+    }
+
+    func testMissing() {
+        store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"])
+
+        let decoded = store.load(Test.self, withIds: ["id1", "missing"])
+        XCTAssertEqual(decoded?.count, 1)
+    }
+    
+    func testReplacement() {
+        store.save(Test(name: "obj1"), withId: "id1")
+        
+        let decoded = store.load(Test.self, withId: "id1")!
+        XCTAssertEqual(decoded.name, "obj1")
+
+        store.save(Test(name: "obj2"), withId: "id1")
+        
+        let decodedAgain = store.load(Test.self, withId: "id1")!
+        XCTAssertEqual(decodedAgain.name, "obj2")
+
+    }
 }
 
