@@ -2,8 +2,17 @@
   "object": {
     "pins": [
       {
+        "package": "Files",
+        "repositoryURL": "https://github.com/elegantchaos/Files.git",
+        "state": {
+          "branch": null,
+          "revision": "db5919720720a0e1a593bd4073ef344485577db2",
+          "version": "1.1.4"
+        }
+      },
+      {
         "package": "XCTestExtensions",
-        "repositoryURL": "https://github.com/elegantchaos/XCTestExtensions",
+        "repositoryURL": "https://github.com/elegantchaos/XCTestExtensions.git",
         "state": {
           "branch": null,
           "revision": "15991478b5c9bda527a0a59567ad0fa26940f74c",

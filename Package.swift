@@ -18,12 +18,13 @@ let package = Package(
             targets: ["ObjectStore"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/XCTestExtensions", from: "1.1.2")
+        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.1.4"),
+        .package(url: "https://github.com/elegantchaos/XCTestExtensions.git", from: "1.1.2")
     ],
     targets: [
         .target(
             name: "ObjectStore",
-            dependencies: []),
+            dependencies: ["Files"]),
         .testTarget(
             name: "ObjectStoreTests",
             dependencies: ["ObjectStore", "XCTestExtensions"]),
