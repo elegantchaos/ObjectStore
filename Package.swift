@@ -18,7 +18,7 @@ let package = Package(
             targets: ["ObjectStore"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.1.4"),
+        .package(url: "https://github.com/elegantchaos/Files.git", from: "1.1.5"),
         .package(url: "https://github.com/elegantchaos/XCTestExtensions.git", from: "1.1.2")
     ],
     targets: [
