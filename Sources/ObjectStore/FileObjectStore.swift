@@ -6,15 +6,13 @@
 import Files
 import Foundation
 
-struct FileObjectStore<E,D>: ObjectStore where E: ObjectEncoder, D: ObjectDecoder {
+public struct FileObjectStore<CoderType>: ObjectStore where CoderType: ObjectCoder {
     let root: Folder
-    let encoder: E
-    let decoder: D
+    let coder: CoderType
 
-    init(root: Folder, encoder: E, decoder: D) {
+    init(root: Folder, coder: CoderType) {
         self.root = root
-        self.encoder = encoder
-        self.decoder = decoder
+        self.coder = coder
         
         try? root.create()
     }
@@ -23,12 +21,12 @@ struct FileObjectStore<E,D>: ObjectStore where E: ObjectEncoder, D: ObjectDecode
         return root.file(id)
     }
     
-    func load<T>(_ type: T.Type, withIds ids: [String]) -> [T]? where T: Decodable {
+    public func load<T>(_ type: T.Type, withIds ids: [String]) -> [T]? where T: Decodable {
         var loaded: [T] = []
         for id in ids {
             if let data = file(forId: id).asData {
                 do {
-                    let decoded = try decoder.decodeObject(type, from: data)
+                    let decoded = try coder.decodeObject(type, from: data)
                     loaded.append(decoded)
                 } catch {
                     print(error)
@@ -39,11 +37,11 @@ struct FileObjectStore<E,D>: ObjectStore where E: ObjectEncoder, D: ObjectDecode
         return loaded
     }
     
-    func save<T>(_ objects: [T], withIds ids: [String]) where T : Encodable {
+    public func save<T>(_ objects: [T], withIds ids: [String]) where T : Encodable {
         assert(objects.count == ids.count)
         for (object, id) in zip(objects, ids) {
             do {
-                let data = try encoder.encodeObject(object)
+                let data = try coder.encodeObject(object)
                 file(forId: id).write(asData: data)
             } catch {
                 print(error)

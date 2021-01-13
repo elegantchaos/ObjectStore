@@ -3,12 +3,12 @@
 //  All code (c) 2021 - present day, Elegant Chaos.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-protocol ObjectStore {
+public protocol ObjectStore {
     func save<T>(_ objects: [T], withIds ids: [String]) where T: Encodable
     func load<T>(_ type: T.Type, withIds ids: [String]) -> [T]? where T: Decodable
 }
 
-extension ObjectStore {
+public extension ObjectStore {
     func save<T>(_ object: T, withId id: String) where T: Encodable {
         save([object], withIds: [id])
     }
@@ -19,7 +19,7 @@ extension ObjectStore {
     }
 }
 
-@available(macOS 10.15, *) extension ObjectStore {
+@available(macOS 10.15, *) public extension ObjectStore {
     func save<T>(_ objects: [T]) where T: Encodable, T: Identifiable, T.ID == String {
         save(objects, withIds: objects.map({ $0.id }))
     }

@@ -15,13 +15,13 @@ final class ObjectStoreIdentifiableTests: XCTestCase {
         let name: String
     }
 
-    typealias FileStore = FileObjectStore<JSONEncoder, JSONDecoder>
+    typealias FileStore = FileObjectStore<JSONObjectCoder>
     
     var store: FileStore!
     
     override func setUp() {
         let folder = FileManager.default.locations.temporary.folder("store")
-        store = FileObjectStore(root: folder, encoder: JSONEncoder(), decoder: JSONDecoder())
+        store = FileObjectStore(root: folder, coder: JSONObjectCoder())
     }
 
     override func tearDown() {
