@@ -18,3 +18,14 @@ extension ObjectStore {
         return objects.first
     }
 }
+
+@available(macOS 10.15, *) extension ObjectStore {
+    func save<T>(_ objects: [T]) where T: Encodable, T: Identifiable, T.ID == String {
+        save(objects, withIds: objects.map({ $0.id }))
+    }
+
+    func save<T>(_ object: T) where T: Encodable, T: Identifiable, T.ID == String {
+        save([object], withIds: [object.id])
+    }
+
+}
