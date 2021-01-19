@@ -41,12 +41,12 @@ final class ObjectStoreTests: XCTestCase {
         testAsync { done in
             store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"]) { errors in
                 XCTAssertEqual(errors.count, 0)
-
-                let decoded = store.load(Test.self, withIds: ["id1", "id2"])!
-                XCTAssertEqual(decoded.count, 2)
-                XCTAssertEqual(decoded[0].name, "obj1")
-                XCTAssertEqual(decoded[1].name, "obj2")
-                done()
+                store.load(Test.self, withIds: ["id1", "id2"]) { decoded, errors in
+                    XCTAssertEqual(decoded.count, 2)
+                    XCTAssertEqual(decoded[0].name, "obj1")
+                    XCTAssertEqual(decoded[1].name, "obj2")
+                    done()
+                }
             }
         }
     }
@@ -56,31 +56,49 @@ final class ObjectStoreTests: XCTestCase {
             store.save(Test(name: "obj1"), withId: "id1") { errors in
                 XCTAssertEqual(errors.count, 0)
 
-                let decoded = store.load(Test.self, withId: "id1")!
-                XCTAssertEqual(decoded.name, "obj1")
-                done()
+                store.load(Test.self, withId: "id1") { result in
+                    switch result {
+                        case .failure(let error): XCTFail("\(error)")
+                        case .success(let decoded): XCTAssertEqual(decoded.name, "obj1")
+                    }
+                    done()
+                }
             }
         }
     }
 
     func testMissingMultiple() {
-        let decoded = store.load(Test.self, withIds: ["missing"])
-        XCTAssertEqual(decoded?.count, 0)
+        testAsync { done in
+            store.load(Test.self, withIds: ["missing1", "missing2"]) { decoded, errors in
+                XCTAssertEqual(decoded.count, 0)
+                XCTAssertEqual(errors.count, 2)
+                done()
+            }
+        }
+    }
+
+    func testMissingSingle() {
+        testAsync { done in
+            store.load(Test.self, withId: "missing") { result in
+                switch result {
+                    case .success: XCTFail("shouldn't have succeeded")
+                    case .failure: break
+                }
+                done()
+            }
+        }
     }
 
     func testMissingPartial() {
-        let decoded = store.load(Test.self, withIds: ["missing"])
-        XCTAssertEqual(decoded?.count, 0)
-    }
-
-    func testMissing() {
         testAsync { done in
             store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"]) { errors in
                 XCTAssertEqual(errors.count, 0)
 
-                let decoded = store.load(Test.self, withIds: ["id1", "missing"])
-                XCTAssertEqual(decoded?.count, 1)
-                done()
+                store.load(Test.self, withIds: ["id1", "missing"]) { decoded, errors in
+                    XCTAssertEqual(decoded.count, 1)
+                    XCTAssertEqual(errors.count, 1)
+                    done()
+                }
             }
         }
     }
@@ -90,16 +108,24 @@ final class ObjectStoreTests: XCTestCase {
             store.save(Test(name: "obj1"), withId: "id1") { errors in
                 XCTAssertEqual(errors.count, 0)
 
-                let decoded = store.load(Test.self, withId: "id1")!
-                XCTAssertEqual(decoded.name, "obj1")
-                done()
+                store.load(Test.self, withId: "id1") { result in
+                    switch result {
+                        case .failure: XCTFail()
+                        case .success(let decoded): XCTAssertEqual(decoded.name, "obj1")
+                    }
+                    done()
+                }
             }
         }
 
         testAsync { done in
             store.save(Test(name: "obj2"), withId: "id1") { errors in
-                let decodedAgain = store.load(Test.self, withId: "id1")!
-                XCTAssertEqual(decodedAgain.name, "obj2")
+                store.load(Test.self, withId: "id1") { result in
+                    switch result {
+                        case .failure: XCTFail()
+                        case .success(let decoded): XCTAssertEqual(decoded.name, "obj2")
+                    }
+                }
                 done()
             }
         }

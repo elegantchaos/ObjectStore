@@ -21,20 +21,23 @@ public struct FileObjectStore<CoderType>: ObjectStore where CoderType: ObjectCod
         return root.file(id)
     }
     
-    public func load<T>(_ type: T.Type, withIds ids: [String]) -> [T]? where T: Decodable {
+    public func load<T>(_ type: T.Type, withIds ids: [String], completion: ([T], [String:Error]) -> ()) where T: Decodable {
         var loaded: [T] = []
+        var errors: [String:Error] = [:]
         for id in ids {
             if let data = file(forId: id).asData {
                 do {
                     let decoded = try coder.decodeObject(type, from: data)
                     loaded.append(decoded)
                 } catch {
-                    print(error)
+                    errors[id] = error
                 }
+            } else {
+                errors[id] = NSError(domain: NSCocoaErrorDomain, code: NSFileNoSuchFileError, userInfo: ["id": id])
             }
         }
         
-        return loaded
+        completion(loaded, errors)
     }
     
     public func save<T>(_ objects: [T], withIds ids: [String], completion: SaveCompletion) where T : Encodable {

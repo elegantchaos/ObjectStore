@@ -6,7 +6,8 @@
 public protocol ObjectStore {
     typealias SaveCompletion = ([String:Error]) -> ()
     func save<T>(_ objects: [T], withIds ids: [String], completion: SaveCompletion) where T: Encodable
-    func load<T>(_ type: T.Type, withIds ids: [String]) -> [T]? where T: Decodable
+    
+    func load<T>(_ type: T.Type, withIds ids: [String], completion: ([T], [String:Error]) -> ()) where T: Decodable
 }
 
 public extension ObjectStore {
@@ -14,9 +15,14 @@ public extension ObjectStore {
         save([object], withIds: [id], completion: completion)
     }
     
-    func load<T>(_ type: T.Type, withId id: String) -> T? where T: Decodable {
-        guard let objects = load(type, withIds: [id]) else { return nil }
-        return objects.first
+    func load<T>(_ type: T.Type, withId id: String, completion: (Result<T,Error>) -> ()) where T: Decodable {
+        load(type, withIds: [id]) { decoded, errors in
+            if let decoded = decoded.first {
+                completion(.success(decoded))
+            } else {
+                completion(.failure(errors[id]!))
+            }
+        }
     }
 }
 

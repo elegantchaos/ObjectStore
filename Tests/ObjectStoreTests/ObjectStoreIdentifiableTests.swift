@@ -33,13 +33,15 @@ final class ObjectStoreIdentifiableTests: XCTestCase {
             store.save([Test(id: "id1", name: "obj1"), Test(id: "id2", name: "obj2")]) { errors in
                 XCTAssertEqual(errors.count, 0)
 
-                let decoded = store.load(Test.self, withIds: ["id1", "id2"])!
-                XCTAssertEqual(decoded.count, 2)
-                XCTAssertEqual(decoded[0].id, "id1")
-                XCTAssertEqual(decoded[0].name, "obj1")
-                XCTAssertEqual(decoded[1].id, "id2")
-                XCTAssertEqual(decoded[1].name, "obj2")
-                done()
+                store.load(Test.self, withIds: ["id1", "id2"]) { decoded, errors in
+                    XCTAssertEqual(errors.count, 0)
+                    XCTAssertEqual(decoded.count, 2)
+                    XCTAssertEqual(decoded[0].id, "id1")
+                    XCTAssertEqual(decoded[0].name, "obj1")
+                    XCTAssertEqual(decoded[1].id, "id2")
+                    XCTAssertEqual(decoded[1].name, "obj2")
+                    done()
+                }
             }
         }
     }
@@ -49,10 +51,15 @@ final class ObjectStoreIdentifiableTests: XCTestCase {
             store.save(Test(id: "id1", name: "obj1")) { errors in
                 XCTAssertEqual(errors.count, 0)
 
-                let decoded = store.load(Test.self, withId: "id1")!
-                XCTAssertEqual(decoded.id, "id1")
-                XCTAssertEqual(decoded.name, "obj1")
-                done()
+                let decoded = store.load(Test.self, withId: "id1") { result in
+                    switch result {
+                        case .failure: XCTFail()
+                        case .success(let decoded):
+                            XCTAssertEqual(decoded.id, "id1")
+                            XCTAssertEqual(decoded.name, "obj1")
+                    }
+                    done()
+                }
             }
         }
     }
