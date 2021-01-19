@@ -10,7 +10,7 @@ Provides three basic operations:
 
 Objects are stored and retrieved using identifiers. 
 
-Ideally these can be anything conforming to the `Identifiable` protocol, although currently some parts of the API require them to be `String`.
+Ideally the identifiers can be anything conforming to the `Identifiable` protocol, although currently some parts of the API require them to be `String`.
 
 Objects can be encoded/decoded in any way that the implementation chooses.
 

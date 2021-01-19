@@ -40,7 +40,7 @@ public struct FileObjectStore<CoderType>: ObjectStore where CoderType: ObjectCod
         completion(loaded, errors)
     }
     
-    public func save<T>(_ objects: [T], withIds ids: [String], completion: SaveCompletion) where T : Encodable {
+    public func save<T>(_ objects: [T], withIds ids: [String], completion: ErrorsCompletion) where T : Encodable {
         assert(objects.count == ids.count)
         var errors: [String:Error] = [:]
         for (object, id) in zip(objects, ids) {
@@ -54,4 +54,16 @@ public struct FileObjectStore<CoderType>: ObjectStore where CoderType: ObjectCod
         completion(errors)
     }
     
+    public func remove(objectsWithIds ids: [String], completion: ([String : Error]) -> ()) {
+        var errors: [String:Error] = [:]
+        for id in ids {
+            do {
+                try file(forId: id).delete()
+            } catch {
+                errors[id] = error
+            }
+        }
+        
+        completion(errors)
+    }
 }

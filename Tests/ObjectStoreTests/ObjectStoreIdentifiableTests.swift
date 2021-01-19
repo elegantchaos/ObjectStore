@@ -29,7 +29,7 @@ final class ObjectStoreIdentifiableTests: XCTestCase {
     }
 
     func testMultiple() {
-        testAsync { done in
+        waitForAsync { done in
             store.save([Test(id: "id1", name: "obj1"), Test(id: "id2", name: "obj2")]) { errors in
                 XCTAssertEqual(errors.count, 0)
 
@@ -47,16 +47,14 @@ final class ObjectStoreIdentifiableTests: XCTestCase {
     }
 
     func testSingle() {
-        testAsync { done in
+        waitForAsync { done in
             store.save(Test(id: "id1", name: "obj1")) { errors in
                 XCTAssertEqual(errors.count, 0)
 
-                let decoded = store.load(Test.self, withId: "id1") { result in
-                    switch result {
-                        case .failure: XCTFail()
-                        case .success(let decoded):
-                            XCTAssertEqual(decoded.id, "id1")
-                            XCTAssertEqual(decoded.name, "obj1")
+                store.load(Test.self, withId: "id1") { result in
+                    XCTAssertSuccess(result) {
+                        XCTAssertEqual($0.id, "id1")
+                        XCTAssertEqual($0.name, "obj1")
                     }
                     done()
                 }
