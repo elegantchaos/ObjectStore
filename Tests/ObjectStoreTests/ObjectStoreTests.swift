@@ -13,6 +13,16 @@ struct Test: Codable {
     let name: String
 }
 
+extension XCTestCase {
+    typealias Action = (() -> ()) -> ()
+    
+    func testAsync(timeout: TimeInterval = 1.0, _ action: Action) {
+        let expectation = XCTestExpectation()
+        action({ expectation.fulfill() })
+        wait(for: [expectation], timeout: timeout)
+    }
+}
+
 final class ObjectStoreTests: XCTestCase {
     typealias FileStore = FileObjectStore<JSONObjectCoder>
     
@@ -28,19 +38,29 @@ final class ObjectStoreTests: XCTestCase {
     }
 
     func testMultiple() {
-        store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"])
-        
-        let decoded = store.load(Test.self, withIds: ["id1", "id2"])!
-        XCTAssertEqual(decoded.count, 2)
-        XCTAssertEqual(decoded[0].name, "obj1")
-        XCTAssertEqual(decoded[1].name, "obj2")
+        testAsync { done in
+            store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"]) { errors in
+                XCTAssertEqual(errors.count, 0)
+
+                let decoded = store.load(Test.self, withIds: ["id1", "id2"])!
+                XCTAssertEqual(decoded.count, 2)
+                XCTAssertEqual(decoded[0].name, "obj1")
+                XCTAssertEqual(decoded[1].name, "obj2")
+                done()
+            }
+        }
     }
 
     func testSingle() {
-        store.save(Test(name: "obj1"), withId: "id1")
-        
-        let decoded = store.load(Test.self, withId: "id1")!
-        XCTAssertEqual(decoded.name, "obj1")
+        testAsync { done in
+            store.save(Test(name: "obj1"), withId: "id1") { errors in
+                XCTAssertEqual(errors.count, 0)
+
+                let decoded = store.load(Test.self, withId: "id1")!
+                XCTAssertEqual(decoded.name, "obj1")
+                done()
+            }
+        }
     }
 
     func testMissingMultiple() {
@@ -54,23 +74,35 @@ final class ObjectStoreTests: XCTestCase {
     }
 
     func testMissing() {
-        store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"])
+        testAsync { done in
+            store.save([Test(name: "obj1"), Test(name: "obj2")], withIds: ["id1", "id2"]) { errors in
+                XCTAssertEqual(errors.count, 0)
 
-        let decoded = store.load(Test.self, withIds: ["id1", "missing"])
-        XCTAssertEqual(decoded?.count, 1)
+                let decoded = store.load(Test.self, withIds: ["id1", "missing"])
+                XCTAssertEqual(decoded?.count, 1)
+                done()
+            }
+        }
     }
     
     func testReplacement() {
-        store.save(Test(name: "obj1"), withId: "id1")
-        
-        let decoded = store.load(Test.self, withId: "id1")!
-        XCTAssertEqual(decoded.name, "obj1")
+        testAsync { done in
+            store.save(Test(name: "obj1"), withId: "id1") { errors in
+                XCTAssertEqual(errors.count, 0)
 
-        store.save(Test(name: "obj2"), withId: "id1")
-        
-        let decodedAgain = store.load(Test.self, withId: "id1")!
-        XCTAssertEqual(decodedAgain.name, "obj2")
+                let decoded = store.load(Test.self, withId: "id1")!
+                XCTAssertEqual(decoded.name, "obj1")
+                done()
+            }
+        }
 
+        testAsync { done in
+            store.save(Test(name: "obj2"), withId: "id1") { errors in
+                let decodedAgain = store.load(Test.self, withId: "id1")!
+                XCTAssertEqual(decodedAgain.name, "obj2")
+                done()
+            }
+        }
     }
 }
 

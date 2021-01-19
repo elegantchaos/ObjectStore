@@ -37,16 +37,18 @@ public struct FileObjectStore<CoderType>: ObjectStore where CoderType: ObjectCod
         return loaded
     }
     
-    public func save<T>(_ objects: [T], withIds ids: [String]) where T : Encodable {
+    public func save<T>(_ objects: [T], withIds ids: [String], completion: SaveCompletion) where T : Encodable {
         assert(objects.count == ids.count)
+        var errors: [String:Error] = [:]
         for (object, id) in zip(objects, ids) {
             do {
                 let data = try coder.encodeObject(object)
                 file(forId: id).write(asData: data)
             } catch {
-                print(error)
+                errors[id] = error
             }
         }
+        completion(errors)
     }
     
 }
